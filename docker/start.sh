@@ -5,7 +5,6 @@ php artisan cache:clear
 php artisan route:clear
 php artisan view:clear
 
-php artisan key:generate --force
 php artisan migrate --force
 
 php artisan storage:link --force 2>/dev/null || true
