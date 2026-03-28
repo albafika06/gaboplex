@@ -6,6 +6,7 @@ use App\Models\Annonce;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class AnnonceController extends Controller
@@ -260,7 +261,13 @@ class AnnonceController extends Controller
 
         if ($request->hasFile('photos')) {
             foreach ($request->file('photos') as $index => $photo) {
-                $path = $photo->store('annonces', 'public');
+                try {
+                    $result = Cloudinary::upload($photo->getRealPath(), ['folder' => 'gaboplex/annonces']);
+                    $path = $result->getSecurePath();
+                } catch (\Exception $e) {
+                    $path = $photo->store('annonces', 'public');
+                    $path = asset('storage/'.$path);
+                }
                 $annonce->photos()->create(['url' => $path, 'ordre' => $index]);
             }
         }
@@ -340,7 +347,13 @@ class AnnonceController extends Controller
         if ($request->hasFile('photos')) {
             $ordre = $annonce->photos()->count();
             foreach ($request->file('photos') as $photo) {
-                $path = $photo->store('annonces', 'public');
+                try {
+                    $result = Cloudinary::upload($photo->getRealPath(), ['folder' => 'gaboplex/annonces']);
+                    $path = $result->getSecurePath();
+                } catch (\Exception $e) {
+                    $path = $photo->store('annonces', 'public');
+                    $path = asset('storage/'.$path);
+                }
                 $annonce->photos()->create(['url' => $path, 'ordre' => $ordre++]);
             }
         }

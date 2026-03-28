@@ -307,7 +307,7 @@
                     <div class="gp-card-img">
                         @if($photos->isNotEmpty())
                             <div class="gp-carrousel-inner" id="gpCarr-{{ $annonce->id }}">
-                                @foreach($photos as $p)<img src="{{ asset('storage/'.$p->url) }}" alt="{{ $annonce->titre }}">@endforeach
+                                @foreach($photos as $p)<img src="{{ str_starts_with($p->url, 'http') ? $p->url : asset('storage/'.$p->url) }}" alt="{{ $annonce->titre }}">@endforeach
                             </div>
                             @if($photos->count()>1)
                                 <button onclick="event.preventDefault();gpSlide('{{ $annonce->id }}',-1)" class="gp-carr-btn gp-carr-prev">‹</button>

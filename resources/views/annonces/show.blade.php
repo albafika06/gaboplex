@@ -110,7 +110,7 @@
             <div class="sd-gallery">
                 <div class="sd-gallery-main">
                     @if($nbPhotos>0)
-                        <img id="sdImg" src="{{ asset('storage/'.$photos->first()->url) }}" alt="{{ $annonce->titre }}">
+                        <img id="sdImg" src="{{ str_starts_with($photos->first()->url, 'http') ? $photos->first()->url : asset('storage/'.$photos->first()->url) }}" alt="{{ $annonce->titre }}">
                         @if($nbPhotos>1)
                             <button class="sd-nav-btn sd-nav-prev" onclick="sdNav(-1)">‹</button>
                             <button class="sd-nav-btn sd-nav-next" onclick="sdNav(1)">›</button>
@@ -280,7 +280,7 @@
 </div>
 
 <script>
-var sdPhotos=[@foreach($annonce->photos as $p)'{{ asset('storage/'.$p->url) }}',@endforeach];
+var sdPhotos=[@foreach($annonce->photos as $p)'{{ str_starts_with($p->url, "http") ? $p->url : asset("storage/".$p->url) }}',@endforeach];
 var sdCur=0;
 function sdGo(i){sdCur=i;var img=document.getElementById('sdImg');if(img){img.style.opacity='0';setTimeout(function(){img.src=sdPhotos[sdCur];img.style.opacity='1'},150)}var ctr=document.getElementById('sdIdx');if(ctr)ctr.textContent=sdCur+1;document.querySelectorAll('.sd-thumb').forEach(function(t,j){t.classList.toggle('active',j===sdCur)})}
 function sdNav(d){sdGo((sdCur+d+sdPhotos.length)%sdPhotos.length)}
