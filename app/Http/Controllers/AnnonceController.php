@@ -266,7 +266,7 @@ class AnnonceController extends Controller
                 try {
                     $result = Cloudinary::upload($photo->getRealPath(), ['folder' => 'gaboplex/annonces']);
                     $annonce->photos()->create([
-                        'url'   => $result->getSecurePath(),
+                        'url'   => $result->getSecureUrl(),
                         'ordre' => $index,
                     ]);
                 } catch (\Exception $e) {
@@ -356,7 +356,7 @@ class AnnonceController extends Controller
                 try {
                     $result = Cloudinary::upload($photo->getRealPath(), ['folder' => 'gaboplex/annonces']);
                     $annonce->photos()->create([
-                        'url'   => $result->getSecurePath(),
+                        'url'   => $result->getSecureUrl(),
                         'ordre' => $ordre++,
                     ]);
                 } catch (\Exception $e) {
