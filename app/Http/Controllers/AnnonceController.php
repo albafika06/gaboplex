@@ -378,7 +378,7 @@ class AnnonceController extends Controller
     private function uploadImgBB(string $filePath): ?string
     {
         $response = Http::post('https://api.imgbb.com/1/upload', [
-            'key'   => 'c9de49dc5ed2ee917cfb16b986d01e7a',
+            'key'   => env('IMGBB_API_KEY'),
             'image' => base64_encode(file_get_contents($filePath)),
         ]);
 
