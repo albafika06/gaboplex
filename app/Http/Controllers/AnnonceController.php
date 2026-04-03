@@ -6,9 +6,9 @@ use App\Models\Annonce;
 use App\Models\Photo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
-use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class AnnonceController extends Controller
@@ -263,17 +263,11 @@ class AnnonceController extends Controller
 
         if ($request->hasFile('photos')) {
             foreach ($request->file('photos') as $index => $photo) {
-                try {
-                    $result = Cloudinary::upload($photo->getRealPath(), ['folder' => 'gaboplex/annonces']);
-                    $annonce->photos()->create([
-                        'url'   => $result->getSecureUrl(),
-                        'ordre' => $index,
-                    ]);
-                } catch (\Exception $e) {
-                    Log::error('Cloudinary upload failed', [
-                        'annonce_id' => $annonce->id,
-                        'error'      => $e->getMessage(),
-                    ]);
+                $url = $this->uploadImgBB($photo->getRealPath());
+                if ($url) {
+                    $annonce->photos()->create(['url' => $url, 'ordre' => $index]);
+                } else {
+                    Log::error('ImgBB upload failed', ['annonce_id' => $annonce->id]);
                 }
             }
         }
@@ -353,17 +347,11 @@ class AnnonceController extends Controller
         if ($request->hasFile('photos')) {
             $ordre = $annonce->photos()->count();
             foreach ($request->file('photos') as $photo) {
-                try {
-                    $result = Cloudinary::upload($photo->getRealPath(), ['folder' => 'gaboplex/annonces']);
-                    $annonce->photos()->create([
-                        'url'   => $result->getSecureUrl(),
-                        'ordre' => $ordre++,
-                    ]);
-                } catch (\Exception $e) {
-                    Log::error('Cloudinary upload failed', [
-                        'annonce_id' => $annonce->id,
-                        'error'      => $e->getMessage(),
-                    ]);
+                $url = $this->uploadImgBB($photo->getRealPath());
+                if ($url) {
+                    $annonce->photos()->create(['url' => $url, 'ordre' => $ordre++]);
+                } else {
+                    Log::error('ImgBB upload failed', ['annonce_id' => $annonce->id]);
                 }
             }
         }
@@ -386,28 +374,30 @@ class AnnonceController extends Controller
         return redirect()->route('dashboard')->with('success', 'Annonce supprimée.');
     }
 
-    // ─── HELPER : suppression d'une photo (Cloudinary ou local) ──────────────
+    // ─── HELPER : upload vers ImgBB ───────────────────────────────────────────
+    private function uploadImgBB(string $filePath): ?string
+    {
+        $response = Http::post('https://api.imgbb.com/1/upload', [
+            'key'   => 'c9de49dc5ed2ee917cfb16b986d01e7a',
+            'image' => base64_encode(file_get_contents($filePath)),
+        ]);
+
+        if ($response->successful() && isset($response['data']['url'])) {
+            return $response['data']['url'];
+        }
+
+        Log::error('ImgBB upload error', ['response' => $response->body()]);
+        return null;
+    }
+
+    // ─── HELPER : suppression d'une photo ────────────────────────────────────
+    // ImgBB (plan gratuit) ne propose pas d'API de suppression.
+    // On supprime uniquement l'entrée en base ; pour les anciens fichiers locaux
+    // on nettoie encore le disque public.
     private function deletePhoto(Photo $photo): void
     {
-        $url = $photo->url;
-
-        if (str_contains($url, 'res.cloudinary.com')) {
-            // Extrait le public_id depuis l'URL Cloudinary
-            // Ex: https://res.cloudinary.com/cloud/image/upload/v123/gaboplex/annonces/abc.jpg
-            //  → gaboplex/annonces/abc
-            if (preg_match('#/upload/(?:v\d+/)?(.+)\.[a-z0-9]+$#i', $url, $matches)) {
-                try {
-                    Cloudinary::destroy($matches[1]);
-                } catch (\Exception $e) {
-                    Log::error('Cloudinary destroy failed', [
-                        'public_id' => $matches[1],
-                        'error'     => $e->getMessage(),
-                    ]);
-                }
-            }
-        } else {
-            // Fallback : suppression locale (anciens fichiers)
-            Storage::disk('public')->delete($url);
+        if (!str_starts_with($photo->url, 'http')) {
+            Storage::disk('public')->delete($photo->url);
         }
     }
 }
