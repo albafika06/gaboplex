@@ -6,8 +6,8 @@ use App\Models\Annonce;
 use App\Models\Photo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
@@ -263,11 +263,11 @@ class AnnonceController extends Controller
 
         if ($request->hasFile('photos')) {
             foreach ($request->file('photos') as $index => $photo) {
-                $url = $this->uploadImgBB($photo->getRealPath());
+                $url = $this->uploadCloudinary($photo->getRealPath());
                 if ($url) {
                     $annonce->photos()->create(['url' => $url, 'ordre' => $index]);
                 } else {
-                    Log::error('ImgBB upload failed', ['annonce_id' => $annonce->id]);
+                    Log::error('Cloudinary upload failed', ['annonce_id' => $annonce->id]);
                 }
             }
         }
@@ -347,11 +347,11 @@ class AnnonceController extends Controller
         if ($request->hasFile('photos')) {
             $ordre = $annonce->photos()->count();
             foreach ($request->file('photos') as $photo) {
-                $url = $this->uploadImgBB($photo->getRealPath());
+                $url = $this->uploadCloudinary($photo->getRealPath());
                 if ($url) {
                     $annonce->photos()->create(['url' => $url, 'ordre' => $ordre++]);
                 } else {
-                    Log::error('ImgBB upload failed', ['annonce_id' => $annonce->id]);
+                    Log::error('Cloudinary upload failed', ['annonce_id' => $annonce->id]);
                 }
             }
         }
@@ -374,29 +374,19 @@ class AnnonceController extends Controller
         return redirect()->route('dashboard')->with('success', 'Annonce supprimée.');
     }
 
-    // ─── HELPER : upload vers ImgBB ───────────────────────────────────────────
-    private function uploadImgBB(string $filePath): ?string
+    // ─── HELPER : upload vers Cloudinary ─────────────────────────────────────
+    private function uploadCloudinary(string $filePath): ?string
     {
-        $apiKey = 'f62ef753d729f43eeb159afdbfe3cd32';
-        Log::info('ImgBB key used: ' . substr($apiKey, 0, 8));
-
-        $response = Http::post('https://api.imgbb.com/1/upload', [
-            'key'   => $apiKey,
-            'image' => base64_encode(file_get_contents($filePath)),
-        ]);
-
-        if ($response->successful() && isset($response['data']['url'])) {
-            return $response['data']['url'];
+        try {
+            $uploadedFile = Cloudinary::upload($filePath, ['folder' => 'gaboplex']);
+            return $uploadedFile->getSecureUrl();
+        } catch (\Exception $e) {
+            Log::error('Cloudinary upload error', ['error' => $e->getMessage()]);
+            return null;
         }
-
-        Log::error('ImgBB upload error', ['response' => $response->body()]);
-        return null;
     }
 
     // ─── HELPER : suppression d'une photo ────────────────────────────────────
-    // ImgBB (plan gratuit) ne propose pas d'API de suppression.
-    // On supprime uniquement l'entrée en base ; pour les anciens fichiers locaux
-    // on nettoie encore le disque public.
     private function deletePhoto(Photo $photo): void
     {
         if (!str_starts_with($photo->url, 'http')) {
