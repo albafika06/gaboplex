@@ -23,6 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
     $middleware->alias([
         'is_admin'     => \App\Http\Middleware\IsAdmin::class,
         'check_bloque' => \App\Http\Middleware\CheckBloque::class,
+        'api.auth'     => \App\Http\Middleware\ApiTokenAuth::class,
     ]);
     $middleware->append(\App\Http\Middleware\CheckBloque::class);
 })

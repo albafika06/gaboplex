@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Annonce;
+use App\Models\Favori;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -56,6 +57,49 @@ class ApiController extends Controller
             ->findOrFail($id);
 
         return response()->json($annonce);
+    }
+
+    // ─── GET /api/favoris ─────────────────────────────────────────────────────
+    public function favoris(Request $request): JsonResponse
+    {
+        $user = $request->_api_user;
+
+        $favoris = Favori::with(['annonce.photoPrincipale'])
+            ->where('user_id', $user->id)
+            ->latest()
+            ->get()
+            ->map(fn($f) => $f->annonce)
+            ->filter()
+            ->values();
+
+        return response()->json($favoris);
+    }
+
+    // ─── POST /api/favoris/{annonce_id} ───────────────────────────────────────
+    public function ajouterFavori(Request $request, int $annonce_id): JsonResponse
+    {
+        $user = $request->_api_user;
+
+        Annonce::where('statut', 'active')->findOrFail($annonce_id);
+
+        Favori::firstOrCreate([
+            'user_id'    => $user->id,
+            'annonce_id' => $annonce_id,
+        ]);
+
+        return response()->json(['message' => 'Ajouté aux favoris.'], 201);
+    }
+
+    // ─── DELETE /api/favoris/{annonce_id} ─────────────────────────────────────
+    public function supprimerFavori(Request $request, int $annonce_id): JsonResponse
+    {
+        $user = $request->_api_user;
+
+        Favori::where('user_id', $user->id)
+            ->where('annonce_id', $annonce_id)
+            ->delete();
+
+        return response()->json(['message' => 'Retiré des favoris.']);
     }
 
     // ─── Token HMAC signé (sans Sanctum) ─────────────────────────────────────
