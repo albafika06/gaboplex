@@ -76,7 +76,7 @@
         @php $photo = $annonce->photos->first(); @endphp
         <div class="bst-preview-img">
             @if($photo)
-                <img src="{{ asset('storage/'.$photo->url) }}" alt="{{ $annonce->titre }}">
+                <img src="{{ str_starts_with($photo->url, 'http') ? $photo->url : asset('storage/'.$photo->url) }}" alt="{{ $annonce->titre }}">
             @else
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
             @endif

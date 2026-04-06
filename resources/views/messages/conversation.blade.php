@@ -156,7 +156,7 @@
                 <div class="cv-side-title">Annonce</div>
                 @php $photo = $annonce->photos->first(); @endphp
                 @if($photo)
-                    <img src="{{ asset('storage/'.$photo->url) }}" alt="" style="width:100%;height:120px;object-fit:cover;border-radius:8px;margin-bottom:.75rem">
+                    <img src="{{ str_starts_with($photo->url, 'http') ? $photo->url : asset('storage/'.$photo->url) }}" alt="" style="width:100%;height:120px;object-fit:cover;border-radius:8px;margin-bottom:.75rem">
                 @endif
                 <div style="font-size:13px;font-weight:600;color:#042C53;margin-bottom:3px">{{ $annonce->titre }}</div>
                 <div style="font-size:12px;color:#94a3b8;margin-bottom:.75rem">📍 {{ $annonce->quartier }}, {{ $annonce->ville }}</div>

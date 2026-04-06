@@ -205,7 +205,7 @@
                         @php $photos=$annonce->photos??collect(); @endphp
                         @if($photos->isNotEmpty())
                             <div class="ds-carr-inner" id="dsCarr-{{ $annonce->id }}">
-                                @foreach($photos as $photo)<img src="{{ asset('storage/'.$photo->url) }}" alt="{{ $annonce->titre }}">@endforeach
+                                @foreach($photos as $photo)<img src="{{ str_starts_with($photo->url, 'http') ? $photo->url : asset('storage/'.$photo->url) }}" alt="{{ $annonce->titre }}">@endforeach
                             </div>
                             @if($photos->count()>1)
                                 <button onclick="event.preventDefault();event.stopPropagation();dsSlide('{{ $annonce->id }}',-1)" class="ds-carr-btn ds-carr-prev">‹</button>

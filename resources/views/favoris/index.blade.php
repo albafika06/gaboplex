@@ -166,7 +166,7 @@
                     <div class="fv-card">
                         <div class="fv-card-img" style="min-height:160px">
                             @if($photo)
-                                <img src="{{ asset('storage/'.$photo->url) }}" alt="{{ $ann->titre }}">
+                                <img src="{{ str_starts_with($photo->url, 'http') ? $photo->url : asset('storage/'.$photo->url) }}" alt="{{ $ann->titre }}">
                             @else
                                 <div class="fv-no-img">
                                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>

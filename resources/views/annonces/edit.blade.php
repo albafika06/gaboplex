@@ -307,7 +307,7 @@
                             <div class="wz-photos-existing">
                                 @foreach($annonce->photos as $photo)
                                     <div class="wz-thumb-ex">
-                                        <img src="{{ asset('storage/'.$photo->url) }}" alt="">
+                                        <img src="{{ str_starts_with($photo->url, 'http') ? $photo->url : asset('storage/'.$photo->url) }}" alt="">
                                         <input type="checkbox" name="supprimer_photos[]" value="{{ $photo->id }}" id="del_{{ $photo->id }}" class="wz-thumb-del-chk">
                                         <label for="del_{{ $photo->id }}" class="wz-thumb-del-lbl" title="Supprimer cette photo">✕</label>
                                         <label for="del_{{ $photo->id }}" class="wz-thumb-del-overlay">🗑</label>

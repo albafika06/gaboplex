@@ -299,7 +299,7 @@
                 <div class="cs-block-title">Annonce concernée</div>
                 @php $photo = $contrat->annonce->photos->first(); @endphp
                 @if($photo)
-                    <img src="{{ asset('storage/'.$photo->url) }}" alt="" style="width:100%;height:140px;object-fit:cover;border-radius:8px;margin-bottom:.75rem">
+                    <img src="{{ str_starts_with($photo->url, 'http') ? $photo->url : asset('storage/'.$photo->url) }}" alt="" style="width:100%;height:140px;object-fit:cover;border-radius:8px;margin-bottom:.75rem">
                 @endif
                 <div style="font-size:14px;font-weight:600;color:#042C53;margin-bottom:4px">{{ $contrat->annonce->titre }}</div>
                 <div style="font-size:12px;color:#94a3b8;margin-bottom:.75rem">📍 {{ $contrat->annonce->quartier }}, {{ $contrat->annonce->ville }}</div>

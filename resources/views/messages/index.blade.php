@@ -54,7 +54,7 @@
                    class="msg-conv {{ $nonLus > 0 ? 'non-lu' : '' }}">
                     <div class="msg-photo">
                         @if($photo)
-                            <img src="{{ asset('storage/'.$photo->url) }}" alt="">
+                            <img src="{{ str_starts_with($photo->url, 'http') ? $photo->url : asset('storage/'.$photo->url) }}" alt="">
                         @else
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="3"/></svg>
                         @endif
