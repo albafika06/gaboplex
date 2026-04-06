@@ -389,6 +389,8 @@ class AnnonceController extends Controller
             'signature' => $signature,
         ]);
 
+        Log::info('Cloudinary response', ['response' => $response->json()]);
+
         if ($response->successful() && isset($response['secure_url'])) {
             return $response['secure_url'];
         }
