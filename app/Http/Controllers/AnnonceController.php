@@ -6,8 +6,8 @@ use App\Models\Annonce;
 use App\Models\Photo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
@@ -374,16 +374,27 @@ class AnnonceController extends Controller
         return redirect()->route('dashboard')->with('success', 'Annonce supprimée.');
     }
 
-    // ─── HELPER : upload vers Cloudinary ─────────────────────────────────────
+    // ─── HELPER : upload vers Cloudinary (HTTP direct) ───────────────────────
     private function uploadCloudinary(string $filePath): ?string
     {
-        try {
-            $uploadedFile = Cloudinary::upload($filePath, ['folder' => 'gaboplex']);
-            return $uploadedFile->getSecureUrl();
-        } catch (\Exception $e) {
-            Log::error('Cloudinary upload error', ['error' => $e->getMessage()]);
-            return null;
+        $apiKey    = '761736954662342';
+        $apiSecret = 'U8EZmGhL-6-lsCit362o-5KEaMM';
+        $timestamp = time();
+        $signature = sha1('timestamp=' . $timestamp . $apiSecret);
+
+        $response = Http::post('https://api.cloudinary.com/v1_1/dajz5tmwm/image/upload', [
+            'file'      => 'data:image/jpeg;base64,' . base64_encode(file_get_contents($filePath)),
+            'api_key'   => $apiKey,
+            'timestamp' => $timestamp,
+            'signature' => $signature,
+        ]);
+
+        if ($response->successful() && isset($response['secure_url'])) {
+            return $response['secure_url'];
         }
+
+        Log::error('Cloudinary upload error', ['response' => $response->body()]);
+        return null;
     }
 
     // ─── HELPER : suppression d'une photo ────────────────────────────────────
