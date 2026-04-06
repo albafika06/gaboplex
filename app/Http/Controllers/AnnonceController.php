@@ -266,6 +266,7 @@ class AnnonceController extends Controller
                 $url = $this->uploadCloudinary($photo->getRealPath());
                 if ($url) {
                     $annonce->photos()->create(['url' => $url, 'ordre' => $index]);
+                    Log::info('Photo saved', ['url' => $url]);
                 } else {
                     Log::error('Cloudinary upload failed', ['annonce_id' => $annonce->id]);
                 }
@@ -350,6 +351,7 @@ class AnnonceController extends Controller
                 $url = $this->uploadCloudinary($photo->getRealPath());
                 if ($url) {
                     $annonce->photos()->create(['url' => $url, 'ordre' => $ordre++]);
+                    Log::info('Photo saved', ['url' => $url]);
                 } else {
                     Log::error('Cloudinary upload failed', ['annonce_id' => $annonce->id]);
                 }
