@@ -129,7 +129,7 @@
                     <div class="sd-thumbs">
                         @foreach($photos as $p)
                             <div class="sd-thumb {{ $loop->first?'active':'' }}" onclick="sdGo({{ $loop->index }})" id="sdT{{ $loop->index }}">
-                                <img src="{{ asset('storage/'.$p->url) }}" alt="">
+                                <img src="{{ str_starts_with($p->url, 'http') ? $p->url : asset('storage/'.$p->url) }}" alt="">
                             </div>
                         @endforeach
                     </div>
